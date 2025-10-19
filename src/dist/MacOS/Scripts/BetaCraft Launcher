@@ -1,0 +1,7 @@
+#!/bin/bash
+
+APP_HOME=$(cd "$(dirname "$0")"; pwd)
+
+CLASSPATH="$APP_HOME/lib/BetaCraft-Launcher-Java.jar:$APP_HOME/lib/bctls-jdk15to18-1.82.jar:$APP_HOME/lib/bcpkix-jdk15to18-1.82.jar:$APP_HOME/lib/bcutil-jdk15to18-1.82.jar:$APP_HOME/lib/bcprov-jdk15to18-1.82.jar:$APP_HOME/lib/commons-httpclient-3.1.jar:$APP_HOME/lib/gson-2.4.jar:$APP_HOME/lib/commons-logging-1.0.4.jar:$APP_HOME/lib/commons-codec-1.2.jar"
+
+exec java -D"javax.net.ssl.trustStore=/$APP_HOME/lib/security/cacerts" -Xdock:name="BetaCraft Launcher" -Xdock:icon="$APP_HOME/../Resources/icon.icns" -cp "$CLASSPATH" org.betacraft.launcher.Launcher

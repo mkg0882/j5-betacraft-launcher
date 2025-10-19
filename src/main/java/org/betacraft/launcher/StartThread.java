@@ -20,10 +20,6 @@ public class StartThread extends Thread {
 		// thread authenticate + login
 		new Thread(new Runnable() {
 			public void run() {
-				boolean release = (BC.prerelease || BC.nightly) ? false : true;
-				if (Launcher.checkForUpdate(release)) {
-					if (!BC.nightly) Launcher.downloadUpdate(release);
-				}
 				
 				if (!Launcher.auth.authenticate()) {
 					Launcher.accounts.removeAccount(Launcher.auth.getCredentials());

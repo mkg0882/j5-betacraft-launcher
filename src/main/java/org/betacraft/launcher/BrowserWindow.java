@@ -12,7 +12,7 @@ public class BrowserWindow extends JFrame implements LanguageElement {
 	public BrowserWindow(JScrollPane scrlp) {
 		System.out.println("Opened info viewer.");
 		this.setIconImage(Window.img);
-		this.setBackground(Color.BLACK);
+		this.setBackground(Color.DARK_GRAY);
 		this.setMinimumSize(new Dimension(360, 360));
 		this.setPreferredSize(new Dimension(360, 360));
 		this.setTitle(Lang.BROWSER_TITLE);

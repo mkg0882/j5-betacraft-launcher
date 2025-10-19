@@ -37,9 +37,6 @@ import org.betacraft.launcher.Lang;
 import com.johnymuffin.evolutions.core.BetaEvolutionsUtils;
 import com.johnymuffin.evolutions.core.BetaEvolutionsUtils.VerificationResults;
 
-import net.arikia.dev.drpc.DiscordEventHandlers;
-import net.arikia.dev.drpc.DiscordRPC;
-import net.arikia.dev.drpc.DiscordRichPresence;
 import uk.betacraft.auth.jsons.mojang.session.JoinServerRequest;
 import uk.betacraft.util.WebData;
 
@@ -60,8 +57,6 @@ public class Wrapper extends Applet implements AppletStub {
 	public URLClassLoader classLoader;
 	/** Minecraft's main class */
 	public Class mainClass;
-	/** Discord RPC */
-	public boolean discord = false;
 	/** Icon for the window frame */
 	public Image icon;
 
@@ -73,7 +68,6 @@ public class Wrapper extends Applet implements AppletStub {
 	public boolean active = false;
 	/** Name for the window frame */
 	public String window_name = "";
-	public DiscordThread discordThread = null;
 
 	/** Preferred width of the game applet */
 	public int width = 854;
@@ -104,12 +98,9 @@ public class Wrapper extends Applet implements AppletStub {
 	 * @param mainFolder - Folder of the instance
 	 * @param height - Preferred height of the applet
 	 * @param width - Preferred width of the applet
-	 * @param RPC - Discord Rich Presence
 	 * @param launchMethod - Launch method for the version
 	 * @param server - Server parameters
 	 * @param mppass - Authentication string for Classic servers
-	 * @param USR - Discord RPC username string
-	 * @param VER - Discord RPC version string
 	 * @param img - Icon for the window frame
 	 * @param addons - List of addons to apply to this instance
 	 */
@@ -140,7 +131,6 @@ public class Wrapper extends Applet implements AppletStub {
 		this.mainFolder = mainFolder;
 		this.height = height;
 		this.width = width;
-		this.discord = RPC;
 		this.serverAddress = server;
 		this.mppass = mppass;
 		this.icon = img;
@@ -165,21 +155,6 @@ public class Wrapper extends Applet implements AppletStub {
 		try {
 			this.ask_for_server = Boolean.parseBoolean(System.getProperty("betacraft.ask_for_server"));
 		}  catch (Throwable t) {}
-
-		if (this.discord) {
-			String applicationId = "939918927989973052";
-			DiscordEventHandlers handlers = new DiscordEventHandlers();
-			DiscordRPC.discordInitialize(applicationId, handlers, true);
-
-			DiscordRichPresence presence = new DiscordRichPresence();
-			presence.startTimestamp = System.currentTimeMillis() / 1000;
-			presence.state = String.format(VER, version);
-			presence.details = String.format(USR, user);
-			presence.largeImageKey = "logo_betacraft_1024";
-			presence.largeImageText = "Download at betacraft.uk";
-			DiscordRPC.discordUpdatePresence(presence);
-			discordThread = new DiscordThread();
-		}
 
 		play();
 	}
@@ -211,23 +186,6 @@ public class Wrapper extends Applet implements AppletStub {
 			if (addon.getName().equals(a.getName())) return true;
 		}
 		return false;
-	}
-
-	public class DiscordThread extends Thread {
-
-		DiscordThread() {
-			super("RPC-Callback-Handler");
-		}
-
-		// Update the RPC
-		public void run() {
-			while (active) {
-				DiscordRPC.discordRunCallbacks();
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException ignored) {}
-			}
-		}
 	}
 	
 	public void sendJoinServerRequest(String server) {
@@ -524,9 +482,6 @@ public class Wrapper extends Applet implements AppletStub {
 						Wrapper.this.start();
 
 						gameFrame.validate();
-
-						// Start Discord RPC
-						if (discord) discordThread.start();
 					}
 
 					public void mouseEntered(MouseEvent arg0) {}
@@ -561,9 +516,6 @@ public class Wrapper extends Applet implements AppletStub {
 				Wrapper.this.start();
 
 				gameFrame.validate();
-
-				// Start Discord RPC
-				if (discord) discordThread.start();
 			}
 		} catch (Throwable ex) {
 			System.err.println("A critical error has occurred!");
@@ -605,26 +557,6 @@ public class Wrapper extends Applet implements AppletStub {
 			return active;
 		}
 		return super.isActive();
-	}
-
-	@Override
-	public void stop() {
-		if (!active) {
-			return;
-		}
-		// Shutdown the RPC correctly
-		if (discord) DiscordRPC.discordShutdown();
-		active = false;
-		if (mainClassInstance != null) {
-			try {
-				if (mainClassInstance instanceof Applet) {
-					((Applet) mainClassInstance).stop();
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				System.exit(0);
-			}
-		}
 	}
 
 	@Override

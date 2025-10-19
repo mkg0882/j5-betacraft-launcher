@@ -1,11 +1,12 @@
-plugins {
-	id 'java'
-	id 'eclipse'
-}
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+apply plugin: 'distribution'
 
-// Gson 2.10 requires Java 7, there's no point in compiling this for Java 5
-targetCompatibility = 7;
-sourceCompatibility = 7;
+targetCompatibility = 5;
+sourceCompatibility = 5;
+
+mainClassName = 'org.betacraft.launcher.Launcher'
 
 repositories {
 	mavenCentral()
@@ -27,43 +28,63 @@ jar {
 	}
 }
 
-task osxBuildApp {
-	dependsOn jar
-
-	doLast {
-		def dist = "${buildDir}/app/BetaCraft Launcher.app"
-		mkdir("$dist/Contents/MacOS")
-		mkdir("$dist/Contents/Resources")
-		copy {
-			from "${buildDir}/../src/main/app/Info.plist"
-			into "$dist/Contents"
+distributions {
+	macOS {
+		baseName = 'BetaCraft Launcher.app'
+		contents {
+			into('Contents') {
+				from { 'src/dist/MacOS/meta' }
+			}
+			into('Contents/Resources') {
+				from { 'src/dist/MacOS/Resources' }
+			}
+			into ('Contents/MacOS/lib') {	
+				from { configurations.compileClasspath }
+				from { jar }
+			}
+			into ( 'Contents/MacOS' ) {
+				from ( 'src/dist/MacOS/Scripts' ){
+					fileMode(493) //This is the decimal representation of the octal '755' permission set
+				}
+			}
+			into ('Contents/MacOS/lib/security') {
+				from { 'src/security' }
+			}
 		}
-		copy {
-			from "${buildDir}/../src/main/app/PkgInfo"
-			into "$dist/Contents"
+	}
+	windows{
+		baseName = 'BetaCraft Launcher (Windows)'
+		contents {
+			from(startScripts){
+				include '*.bat'
+			}
+			into('lib'){
+				from { configurations.compileClasspath }
+				from { jar }
+			}
 		}
-		copy {
-			from "${buildDir}/../src/main/app/BetaCraft Launcher"
-			into "$dist/Contents/MacOS"
-		}
-		copy {
-			from "${buildDir}/../src/main/app/icon.icns"
-			into "$dist/Contents/Resources"
-		}
-		copy {
-			from "${buildDir}/libs/${project.name}.jar"
-			into "$dist/Contents/MacOS"
-		}
-		exec {
-			workingDir "${buildDir}/app/"
-			commandLine('zip', '-rvFSX', "../libs/BetaCraft-Launcher-macOS.zip", '.')
+	}
+	linux{
+			baseName = 'BetaCraft Launcher (Linux)'
+		contents {
+			from(startScripts){
+				exclude '*.bat'
+				fileMode(493)
+			}
+			into('lib'){
+				from { configurations.compileClasspath }
+				from { jar }
+			}
 		}
 	}
 }
 
 dependencies {
-	runtime 'com.google.code.gson:gson:2.10.1'
-
-	compileOnly 'com.google.code.gson:gson:2.10.1'
-	compileOnly 'net.arikia.dev:discord-rpc-without-jna:1.7.0'
+	runtime 'com.google.code.gson:gson:2.4'
+	implementation 'org.bouncycastle:bcprov-jdk15to18:1.82'
+	implementation 'org.bouncycastle:bctls-jdk15to18:1.82'
+	implementation 'org.bouncycastle:bcpkix-jdk15to18:1.82'
+	implementation 'org.bouncycastle:bcutil-jdk15to18:1.82'
+	implementation 'commons-httpclient:commons-httpclient:3.1'
+	compileOnly 'com.google.code.gson:gson:2.4'
 }

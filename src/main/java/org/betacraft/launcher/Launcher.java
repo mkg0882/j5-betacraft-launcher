@@ -94,47 +94,6 @@ public class Launcher {
 			ex.printStackTrace();
 		}
 
-		if (args.length >= 2 && (args[0].equals("update") || (args[1].equals("update")))) {
-			try {
-				// Backwards compatibility with older versions of the launcher
-				int e = 1;
-				if (args[1].equals("update")) {
-					e++;
-				}
-
-				// Define a path for the update destination
-				String pathToJar = "";
-				for (int i = e; i < args.length; i++) {
-					if (pathToJar.equals("")) {
-						pathToJar = args[i];
-					} else {
-						pathToJar = pathToJar + " " + args[i];
-					}
-				}
-
-				// Fix the path for different operating systems
-				if ((pathToJar.startsWith("//") && !OS.isWindows()) || (pathToJar.startsWith("/") && OS.isWindows())) pathToJar = pathToJar.substring(1, pathToJar.length());
-
-				// Move the updated version to the destination
-				File dest = new File(pathToJar);
-				Util.copy(BC.currentPath, dest);
-
-				// Launch the updated launcher
-				ArrayList<String> pa = new ArrayList<String>();
-				pa.add("java");
-				pa.add("-jar");
-				pa.add(dest.getAbsolutePath());
-				new ProcessBuilder(pa).start();
-
-				// Exit this process, its job is done
-				System.exit(0);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				System.exit(0);
-			}
-			return;
-		}
-
 		// Launch the game on 'wrap'
 		if (args.length > 0 && args[0].equals("wrap")) {
 			BC.wrapped = true;
@@ -384,28 +343,6 @@ public class Launcher {
 			}
 		}
 
-		// Download Discord RPC if the checkbox is selected
-		if (Launcher.currentInstance.RPC) {
-			File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
-			String expected_hash = new CustomRequest("http://files.betacraft.uk/launcher/assets/discord_rpc.sha1").perform().response;
-
-			if (expected_hash != null) {
-				expected_hash = expected_hash.replace("\n", "");
-
-				if (rpc.exists()) {
-					try {
-						String sha1 = Util.getSHA1(rpc);
-						if (!sha1.equals(expected_hash)) {
-							Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc, expected_hash);
-						}
-					} catch (Throwable t) {}
-				} else if (!Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc, expected_hash).isPositive()) {
-					// Disable if failed to download
-					Launcher.currentInstance.RPC = false;
-				}
-			}
-		}
-
 		Release rel = Release.getReleaseByName(Launcher.currentInstance.version);
 		ModObject mo = ModsRepository.getMod(rel.getInfo().getVersion());
 		if (mo == null) {
@@ -579,14 +516,6 @@ public class Launcher {
 					}
 				}
 
-				// Additional parameters:
-				// - Discord RPC
-				String add = "";
-				if (instance.RPC) {
-					// Add DRPC to the launch arguments
-					add = colon + BC.get() + "launcher" + File.separator + "discord_rpc.jar";
-				}
-
 				// Let the user overwrite this argument - put it before the custom ones
 				params.add("-Djava.util.Arrays.useLegacyMergeSort=true");
 
@@ -643,7 +572,7 @@ public class Launcher {
 				// Add the rest of params and launch the wrapper
 				//params.add("-Duser.home=" + instance.gameDir);
 				params.add("-cp");
-				params.add(BC.get() + "launcher" + File.separator + "betacraft_wrapper.jar" + add);
+				params.add(BC.get() + "launcher" + File.separator + "betacraft_wrapper.jar");
 				params.add("org.betacraft.launcher.Launcher");
 				params.add("wrap");
 				params.add(getNickname());
@@ -988,103 +917,6 @@ public class Launcher {
 
 		DownloadResponse response = new DownloadRequest(link, folder.getAbsolutePath(), sha1, true).perform();
 		return response.result;
-	}
-
-	public static void downloadUpdate(boolean release) {
-		// Get the update name
-		String update = getUpdate(release);
-		try {
-			boolean yes = false;
-
-			// Format the message
-			String update_name = update.startsWith("!") ? update.substring(1) : update; 
-			String rr = Lang.UPDATE_FOUND.replaceAll("%s", update_name);
-
-			if (!update.startsWith("!")) {
-				// Present update options
-				Object[] options = new Object[] {Lang.YES, Lang.NO, Lang.MANUAL_DOWNLOAD};
-				int result = JOptionPane.showOptionDialog(Window.mainWindow, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
-
-				if (result == 0) {
-					System.out.println("The user wants to update to: " + update_name);
-					yes = true;
-				} else if (result == 1) {
-					System.out.println("The user doesn't want to update. The launcher stays at version: " + VERSION);
-				} else {
-					// openURL may not work on macOS or some linux distros...
-					new SimpleWebAddressFrame("https://github.com/Moresteck/BetaCraft-Launcher-Java/releases/tag/" + update_name);
-					//Util.openURL("https://github.com/Moresteck/BetaCraft-Launcher-Java/releases/tag/" + update_name);
-					return;
-				}
-			} else {
-				System.out.println("Forced update to: " + update_name);
-				yes = true;
-			}
-			// If the user accepted the update, or it is a mandatory update, download it
-			if (yes) {
-				String ending = ".jar";
-				if (BC.currentPath.getAbsolutePath().endsWith(".exe")) {
-					ending = ".exe";
-				}
-				if (BC.portable) {
-					ending = "-portable" + ending;
-				}
-
-				String url = "http://files.betacraft.uk/launcher/launcher-" + update_name + ending;
-				if (!release) url = "http://files.betacraft.uk/launcher/launcher-" + update_name + ending;
-
-				// Download the update
-				download(url, new File(BC.get(), "betacraft.jar$tmp"));
-
-				// Launch the new version to finish updating
-				String[] args = new String[] {"java", "-jar", BC.get() + "betacraft.jar$tmp", "update", BC.currentPath.getAbsolutePath()};
-				Runtime.getRuntime().exec(args);
-
-				// Close this process
-				Window.quit(true);
-			}
-		} catch (Exception ex) {
-			System.err.println("An error has occurred while updating the launcher!");
-			ex.printStackTrace();
-		}
-	}
-
-	public static boolean checkForUpdate(boolean release) {
-		// Get the latest version
-		String update = getUpdate(release);
-		if (update == null) {
-			// No internet connection scenario
-			return false;
-		}
-		String update_name = update.startsWith("!") ? update.replace("!", "") : update; 
-		if (!VERSION.equalsIgnoreCase(update_name)) {
-			// The latest version doesn't match the local version
-			System.out.println("Found a new version of the launcher (" + update + ").");
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static String getUpdate(boolean release) {
-		try {
-			String Url = "http://files.betacraft.uk/launcher/rel.txt";
-			if (!release) Url = "http://files.betacraft.uk/launcher/pre.txt";
-			URL url = new URL(Url);
-			Scanner s = new Scanner(url.openStream(), "UTF-8");
-			String update = s.nextLine().split(":")[1];
-			s.close();
-			return update;
-		} catch (UnknownHostException ex) {
-			System.out.println("No connection, or the server is down");
-		} catch (SocketTimeoutException ex) {
-			System.out.println("No connection, or the server is down");
-		} catch (SocketException ex) {
-			System.out.println("No connection, or the server is down");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return null;
 	}
 
 	public static String getNickname() {

@@ -8,6 +8,13 @@ import java.net.URL;
 
 import javax.swing.JOptionPane;
 
+import org.apache.commons.httpclient.ssl.SimpleSSLTestProtocolSocketFactory;
+import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.protocol.Protocol;
+
 import org.betacraft.launcher.Lang;
 
 import com.google.gson.Gson;
@@ -36,46 +43,31 @@ public class RequestUtil {
 	}
 
 	public static WebData performRawPOSTRequest(Request req) {
-		HttpURLConnection con = null;
+		Protocol bchttps = new Protocol("https", new SimpleSSLTestProtocolSocketFactory(), 443);
+		Protocol.registerProtocol("https", bchttps);
+		HttpClient httpclient = new HttpClient();
+		PostMethod httppost = new PostMethod(req.REQUEST_URL);
 		try {
-			URL url = new URL(req.REQUEST_URL);
-			con = (HttpURLConnection) url.openConnection();
-
 			for (String key : req.PROPERTIES.keySet()) {
-				con.addRequestProperty(key, req.PROPERTIES.get(key));
+				httppost.addRequestHeader(key, req.PROPERTIES.get(key));
 			}
-			con.setRequestMethod("POST");
-			con.setReadTimeout(15000);
-			con.setConnectTimeout(15000);
-			con.setDoInput(true);
-			con.setDoOutput(true);
-			con.setUseCaches(false);
-
 			// Send POST
-			DataOutputStream out = new DataOutputStream(con.getOutputStream());
 			if (req.POST_DATA == null) {
 				Gson gson = new Gson();
 				String s = gson.toJson(req);
 				if (debug) System.out.println("OUTGOING: " + s);
-				out.write(s.getBytes("UTF-8"));
+				httppost.setRequestBody(s);
 			} else {
 				if (debug) System.out.println("OUTGOING: " + req.POST_DATA);
-				out.write(req.POST_DATA.getBytes("UTF-8"));
+				httppost.setRequestBody(req.POST_DATA);
 			}
-			out.flush();
-			out.close();
-
+			httpclient.executeMethod(httppost);
 			// Read response
-			int http = con.getResponseCode();
+			int http = httppost.getStatusCode();
 			byte[] data = null;
 			if (debug) System.out.println(http);
-
-			if (http >= 400 && http < 600) {
-				data = readInputStream(con.getErrorStream());
-			} else {
-				data = readInputStream(con.getInputStream());
-			}
-
+			data = readInputStream(httppost.getResponseBodyAsStream());
+			httppost.releaseConnection();
 			return new WebData(data, http);
 		} catch (javax.net.ssl.SSLHandshakeException e) {
 			e.printStackTrace();
@@ -92,35 +84,23 @@ public class RequestUtil {
 	}
 
 	public static WebData performRawGETRequest(Request req) {
-		HttpURLConnection con = null;
+		Protocol bchttps = new Protocol("https", new SimpleSSLTestProtocolSocketFactory(), 443);
+		Protocol.registerProtocol("https", bchttps);
+		HttpClient httpclient = new HttpClient();
+		GetMethod httpget = new GetMethod(req.REQUEST_URL);
 		try {
 			if (debug) System.out.println("OUTCOME TO: " + req.REQUEST_URL);
-			URL url = new URL(req.REQUEST_URL);
-			con = (HttpURLConnection) url.openConnection();
-
-			con.setRequestMethod("GET");
-			con.setReadTimeout(15000);
-			con.setConnectTimeout(15000);
-			con.setDoInput(true);
-			con.setDoOutput(true);
-			con.setUseCaches(false);
 			// i'm a browser C:
-			con.addRequestProperty("User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
+			httpget.addRequestHeader("User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
 			for (String key : req.PROPERTIES.keySet()) {
-				con.addRequestProperty(key, req.PROPERTIES.get(key));
+				httpget.addRequestHeader(key, req.PROPERTIES.get(key));
 			}
-
+			httpclient.executeMethod(httpget);
 			// Read response
-			int http = con.getResponseCode();
+			int http = httpget.getStatusCode();
 			byte[] data = null;
 			if (debug) System.out.println(http);
-
-			if (http >= 400 && http < 600) {
-				data = readInputStream(con.getErrorStream());
-			} else {
-				data = readInputStream(con.getInputStream());
-			}
-
+			data = readInputStream(httpget.getResponseBodyAsStream());
 			return new WebData(data, http);
 		} catch (javax.net.ssl.SSLHandshakeException e) {
 			e.printStackTrace();

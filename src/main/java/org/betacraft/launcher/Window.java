@@ -66,6 +66,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		mainWindow = this;
 		setMinimumSize(new Dimension(800, 480));
 		setPreferredSize(new Dimension(800, 480));
+		setSize(new Dimension(800, 480));
 		setTitle(Lang.WINDOW_TITLE + (BC.nightly ? " [NIGHTLY]" : ""));
 		setLayout(new BorderLayout());
 		setLocationRelativeTo(null);

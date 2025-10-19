@@ -20,8 +20,6 @@ import javax.swing.JPanel;
 import org.betacraft.launcher.Lang;
 import org.betacraft.launcher.OS;
 
-import net.arikia.dev.drpc.DiscordRPC;
-
 // Pretends to be MinecraftApplet
 public class Classic12aWrapper extends Wrapper {
 	public Runnable run;
@@ -72,8 +70,6 @@ public class Classic12aWrapper extends Wrapper {
 
 						gameFrame.validate();
 
-						// Start Discord RPC
-						if (discord) discordThread.start();
 					}
 
 					public void mouseEntered(MouseEvent arg0) {}
@@ -102,8 +98,6 @@ public class Classic12aWrapper extends Wrapper {
 
 				gameFrame.validate();
 
-				// Start Discord RPC
-				if (discord) discordThread.start();
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -138,8 +132,6 @@ public class Classic12aWrapper extends Wrapper {
 		if (!active) {
 			return;
 		}
-		// Shutdown the RPC correctly
-		if (discord) DiscordRPC.discordShutdown();
 		active = false;
 		try {
 			for (final Field mcField : mainClass.getDeclaredFields()) {

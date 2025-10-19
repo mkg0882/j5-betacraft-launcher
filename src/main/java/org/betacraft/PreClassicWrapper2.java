@@ -163,8 +163,6 @@ public class PreClassicWrapper2 extends Wrapper {
 			this.setLayout(new BorderLayout());
 			this.add(a, "Center");
 
-			// Start Discord RPC
-			if (discord) discordThread.start();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

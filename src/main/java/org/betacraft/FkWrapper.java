@@ -107,8 +107,6 @@ public class FkWrapper extends Wrapper {
 
 			gameFrame.validate();
 
-			// Start Discord RPC
-			if (discord) discordThread.start();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

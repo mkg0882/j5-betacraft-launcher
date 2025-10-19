@@ -86,7 +86,7 @@ public class WebsitePanel extends JPanel {
 		final JEditorPane textPane = new JEditorPane();
 		try {
 			textPane.setEditable(false);
-			textPane.setBackground(Color.BLACK);
+			textPane.setBackground(Color.DARK_GRAY);
 			textPane.setContentType("text/html;charset=UTF-8");
 			textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
 		}
@@ -104,7 +104,7 @@ public class WebsitePanel extends JPanel {
 		final JEditorPane textPane = new JEditorPane();
 		try {
 			textPane.setEditable(false);
-			textPane.setBackground(Color.BLACK);
+			textPane.setBackground(Color.DARK_GRAY);
 			textPane.setContentType("text/html;charset=UTF-8");
 			String loading = Lang.TAB_SRV_LOADING;
 			String list1 = "<html><body bgcolor=\"black\"><font color=\"#808080\"><br><br><br><br><br><center><h1>" + loading + "</h1></center></font></body></html>";
@@ -161,7 +161,7 @@ public class WebsitePanel extends JPanel {
 		final JEditorPane textPane = new JEditorPane();
 		try {
 			textPane.setEditable(false);
-			textPane.setBackground(Color.BLACK);
+			textPane.setBackground(Color.DARK_GRAY);
 			textPane.setContentType("text/html;charset=UTF-8");
 			String news = Lang.TAB_CL_LOADING;
 			String news1 = "<html><body bgcolor=\"black\"><font color=\"#808080\"><br><br><br><br><br><center><h1>" + news + "</h1></center></font></body></html>";
@@ -214,7 +214,7 @@ public class WebsitePanel extends JPanel {
 		final JEditorPane textPane = new JEditorPane();
 		try {
 			textPane.setEditable(false);
-			textPane.setBackground(Color.BLACK);
+			textPane.setBackground(Color.DARK_GRAY);
 			textPane.setContentType("text/html;charset=UTF-8");
 			String news = tab == Tab.CHANGELOG ? Lang.TAB_CL_LOADING : Lang.TAB_SRV_LOADING;
 			String news1 = "<html><body bgcolor=\"black\"><font color=\"#808080\"><br><br><br><br><br><center><h1>" + news + "</h1></center></font></body></html>";

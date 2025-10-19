@@ -6,8 +6,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 
-import net.arikia.dev.drpc.DiscordRPC;
-
 public class PreClassicWrapper extends Wrapper {
 
 	public PreClassicWrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder,
@@ -68,7 +66,6 @@ public class PreClassicWrapper extends Wrapper {
 			t.start();
 			if (!this.addonsPostAppletInit(this.addons)) return;
 			while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
-				if (discordThread != null) DiscordRPC.discordRunCallbacks();
 				Thread.sleep(2000);
 			}
 			this.stop();
