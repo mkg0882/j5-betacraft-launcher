@@ -122,11 +122,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		panel.add(keepOpenCheck, constr);
 
 		constr.gridy++;
-		RPCCheck = new JCheckBox(Lang.OPTIONS_RPC);
-		RPCCheck.setForeground(Color.LIGHT_GRAY);
-		RPCCheck.setOpaque(false);
-		RPCCheck.setSelected(Launcher.currentInstance.RPC);
-		panel.add(RPCCheck, constr);
 		
 		constr.gridy++;
 		intelFix = new JCheckBox(Lang.OPTIONS_INTEL_TRICK);
@@ -456,7 +451,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		this.setTitle(Lang.OPTIONS_TITLE);
 		proxyCheck.setText(Lang.OPTIONS_PROXY);
 		keepOpenCheck.setText(Lang.OPTIONS_KEEP_OPEN);
-		RPCCheck.setText(Lang.OPTIONS_RPC);
 		intelFix.setText(Lang.OPTIONS_INTEL_TRICK);
 		parametersText.setText(Lang.OPTIONS_LAUNCH_ARGS);
 		dirChooser.setText(Lang.BROWSE);

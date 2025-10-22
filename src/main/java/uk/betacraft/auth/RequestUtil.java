@@ -88,16 +88,20 @@ public class RequestUtil {
 		Protocol.registerProtocol("https", bchttps);
 		HttpClient httpclient = new HttpClient();
 		GetMethod httpget = new GetMethod(req.REQUEST_URL);
+		httpget.setFollowRedirects(true);
 		try {
 			if (debug) System.out.println("OUTCOME TO: " + req.REQUEST_URL);
 			// i'm a browser C:
-			httpget.addRequestHeader("User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
+			if (!req.REQUEST_URL.contains("sourceforge")){
+				httpget.addRequestHeader("User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
+			}
 			for (String key : req.PROPERTIES.keySet()) {
 				httpget.addRequestHeader(key, req.PROPERTIES.get(key));
 			}
 			httpclient.executeMethod(httpget);
 			// Read response
 			int http = httpget.getStatusCode();
+			if (debug) System.out.println("Response status code is: " + http);
 			byte[] data = null;
 			if (debug) System.out.println(http);
 			data = readInputStream(httpget.getResponseBodyAsStream());

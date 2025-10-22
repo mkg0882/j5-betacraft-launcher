@@ -248,9 +248,6 @@ public class Lang extends JFrame implements LanguageElement {
 
 		if (langentries.hasProperty("use_betacraft"))
 			OPTIONS_PROXY = langentries.getProperty("use_betacraft");
-
-		if (langentries.hasProperty("discord_rpc"))
-			OPTIONS_RPC = langentries.getProperty("discord_rpc");
 		
 		if (langentries.hasProperty("intel_trick"))
 			OPTIONS_INTEL_TRICK = langentries.getProperty("intel_trick");
@@ -566,7 +563,6 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String OPTIONS_PROXY = "Use skin & sound proxy";
 	public static String OPTIONS_UPDATE_HEADER = "Update available";
 	public static String OPTIONS_KEEP_OPEN = "Keep the launcher open";
-	public static String OPTIONS_RPC = "Discord RPC";
 	public static String OPTIONS_INTEL_TRICK = "Apply performance trick for Intel Graphics";
 	public static String OPTIONS_LAUNCH_ARGS = "JVM arguments:";
 	public static String OPTIONS_OK = "OK";

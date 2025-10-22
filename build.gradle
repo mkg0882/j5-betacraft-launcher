@@ -28,6 +28,15 @@ jar {
 	}
 }
 
+startScripts {
+    doLast {
+        def windowsScriptFile = file getWindowsScript()
+        def unixScriptFile = file getUnixScript()
+        windowsScriptFile.text = windowsScriptFile.text.replace('set APP_HOME=%DIRNAME%..', 'set APP_HOME=%DIRNAME%')
+        unixScriptFile.text = unixScriptFile.text.replace('cd "`dirname \"$PRG\"`/.." >/dev/null', 'cd "`dirname \"$PRG\"`" >/dev/null')
+    }
+}
+
 distributions {
 	macOS {
 		baseName = 'BetaCraft Launcher.app'

@@ -24,4 +24,8 @@ public class OS {
 	public static boolean isArchOdd() {
 		return ARCH.equalsIgnoreCase("x86") || ARCH.equalsIgnoreCase("aarch64") || ARCH.contains("arm");
 	}
+	
+	public static boolean isPowerPCMac() {
+		return OS.toLowerCase().contains("mac") && (ARCH.toLowerCase().contains("ppc") || ARCH.toLowerCase().contains("powerpc"));
+	}
 }

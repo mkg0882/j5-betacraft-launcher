@@ -66,8 +66,8 @@ public class SimpleSSLTestProtocolSocketFactory implements SecureProtocolSocketF
     private static SSLContext SSLCONTEXT = null;
     
     private static SSLContext createSSLContext() {
-		Security.addProvider(new BouncyCastleProvider());
-		Security.addProvider(new BouncyCastleJsseProvider());
+		Security.insertProviderAt(new BouncyCastleProvider(), 1);
+		Security.insertProviderAt(new BouncyCastleJsseProvider(), 2);
         try {
 			SSLContext sslcontext = SSLContext.getInstance("TLSv1.2", "BCJSSE");
 			

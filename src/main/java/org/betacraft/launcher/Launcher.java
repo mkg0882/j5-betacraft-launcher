@@ -715,6 +715,7 @@ public class Launcher {
 				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
+			
 		}
 		return true;
 	}
@@ -836,6 +837,9 @@ public class Launcher {
 	public static boolean downloadDepends() {
 		File destLibs = new File(BC.get() + "bin" + File.separator);
 		File destNatives = new File(BC.get() + "bin" + File.separator + "natives" + File.separator);
+		
+		File dest1 = new File(BC.get() + "launcher/", "natives.zip");
+		File dest2 = new File(BC.get() + "launcher/", "libs.zip");
 
 		String link1 = "http://files.betacraft.uk/launcher/assets/natives-windows.zip";
 		String link2 = "http://files.betacraft.uk/launcher/assets/libs-windows.zip";
@@ -847,15 +851,17 @@ public class Launcher {
 			link2 = "http://files.betacraft.uk/launcher/assets/libs-osx.zip";
 			link1 = "http://files.betacraft.uk/launcher/assets/natives-osx.zip";
 		}
-
-		File dest1 = new File(BC.get() + "launcher/", "natives.zip");
+		if (OS.isPowerPCMac()){
+			//link2 = "https://sourceforge.net/projects/java-game-lib/files/Official%20Releases/LWJGL%202.4.2/lwjgl-2.4.2.zip/download";
+			link1 = "https://sourceforge.net/projects/java-game-lib/files/Official%20Releases/LWJGL%202.4.2/lwjgl-2.4.2.zip/download";
+		}
 		if (!downloadWithButtonOutput(link1, dest1, null).isPositive()) {
 			return false;
 		}
-
-		File dest2 = new File(BC.get() + "launcher/", "libs.zip");
-		if (!downloadWithButtonOutput(link2, dest2, null).isPositive()) {
-			return false;
+		if (!OS.isPowerPCMac()){
+			if (!downloadWithButtonOutput(link2, dest2, null).isPositive()) {
+				return false;
+			}
 		}
 
 		// Update the local memory with depends' version
@@ -874,8 +880,18 @@ public class Launcher {
 		destNatives.mkdirs();
 
 		// Lastly, schedule zips for extraction
-		totalThreads.add(Util.unzip(dest1, destNatives, true));
-		totalThreads.add(Util.unzip(dest2, destLibs, true));
+		if (!OS.isPowerPCMac()){
+			totalThreads.add(Util.unzip(dest1, destNatives, true));
+			totalThreads.add(Util.unzip(dest2, destLibs, true));
+		} else {
+			String[] sourcePaths = {"jar/lwjgl.jar",
+									 "jar/lwjgl_util.jar",
+									 "jar/jinput.jar",
+									 "native/macosx/libjinput-osx.jnilib",
+									 "native/macosx/liblwjgl.jnilib",
+									 "native/macosx/openal.dylib"		};
+			totalThreads.add(Util.unzip(dest1, sourcePaths, destNatives, destLibs, true));
+		}
 		return true;
 	}
 

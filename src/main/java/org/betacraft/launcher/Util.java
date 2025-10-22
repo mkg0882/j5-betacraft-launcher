@@ -260,6 +260,10 @@ public class Util {
 		return unzip(source.getAbsolutePath(), dest_folder.getAbsolutePath(), delete);
 	}
 
+	public static Thread unzip(File source, String[] sourcePaths, File dest_natives, File dest_libs, boolean delete) {
+		return unzip(source.getAbsolutePath(), sourcePaths, dest_natives.getAbsolutePath(), dest_libs.getAbsolutePath(), delete);
+	}
+
 	public static Thread unzip(final String source, final String dest_folder, final boolean delete) {
 		Thread unrarthread = new Thread() {
 			public void run() {
@@ -301,6 +305,73 @@ public class Util {
 		};
 		unrarthread.start();
 		return unrarthread;
+	}
+	
+	public static Thread unzip(final String source, final String[] sourcePaths, final String dest_natives, final String dest_libs, final boolean delete) {
+		Thread unrarthread = new Thread() {
+			public void run() {
+				System.out.println("Entered Unzip.");
+				FileInputStream fis;
+				byte[] buffer = new byte[1024];
+				try {
+					String dest_folder = dest_libs;
+					fis = new FileInputStream(source);
+					ZipInputStream zis = new ZipInputStream(fis);
+					ZipEntry entry = zis.getNextEntry();
+					while (entry != null) {
+						if (entry.isDirectory()) {
+							entry = zis.getNextEntry();
+							continue;
+						}
+						
+						String filePath = entry.getName();
+						String fileName = "";
+						for (String sourcePath : sourcePaths){
+							if (filePath.toLowerCase().contains(sourcePath.toLowerCase())){
+								String[] pathArray = filePath.split("/");
+								fileName = pathArray[(pathArray.length - 1)];
+								System.out.println("Matched file name " + fileName);
+								if (filePath.toLowerCase().contains("/native")){
+									dest_folder = dest_natives;
+								} else if (filePath.toLowerCase().contains("/jar")){
+									dest_folder = dest_libs;
+								}
+								//entry = zis.getNextEntry();
+								break;
+							}
+						}
+						
+						if (fileName == "") {
+							entry = zis.getNextEntry();
+							continue;
+						}
+						
+						File newFile = new File(dest_folder + File.separator + fileName);
+
+						new File(newFile.getParent()).mkdirs();
+						FileOutputStream fos = new FileOutputStream(newFile);
+						int length;
+						while ((length = zis.read(buffer)) > 0) {
+							fos.write(buffer, 0, length);
+						}
+
+						fos.flush();
+						fos.close();
+						zis.closeEntry();
+						entry = zis.getNextEntry();
+					}
+					zis.closeEntry();
+					zis.close();
+					fis.close();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				if (delete) new File(source).delete();
+				if (!Util.isStandalone()) Launcher.totalThreads.remove(this);
+			}
+		};
+		unrarthread.start();
+		return unrarthread;		
 	}
 
 	// TODO fix not repacking properly? BTA can't start because of this
